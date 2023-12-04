@@ -205,17 +205,17 @@ def DeforumAnimArgs():
     video_mask_path ='/content/video_in.mp4'#@param {type:"string"}
 
     #@markdown ####**Hybrid Video for 2D/3D Animation Mode:**
-    hybrid_video_generate_inputframes = False #@param {type:"boolean"}
-    hybrid_video_use_first_frame_as_init_image = True #@param {type:"boolean"}
-    hybrid_video_motion = "None" #@param ['None','Optical Flow','Perspective','Affine']
-    hybrid_video_flow_method = "Farneback" #@param ['Farneback','DenseRLOF','SF']
-    hybrid_video_composite = False #@param {type:"boolean"}
-    hybrid_video_comp_mask_type = "None" #@param ['None', 'Depth', 'Video Depth', 'Blend', 'Difference']
-    hybrid_video_comp_mask_inverse = False #@param {type:"boolean"}
-    hybrid_video_comp_mask_equalize = "None" #@param  ['None','Before','After','Both']
-    hybrid_video_comp_mask_auto_contrast = False #@param {type:"boolean"}
-    hybrid_video_comp_save_extra_frames = False #@param {type:"boolean"}
-    hybrid_video_use_video_as_mse_image = False #@param {type:"boolean"}
+    hybrid_generate_inputframes = False #@param {type:"boolean"}
+    hybrid_use_first_frame_as_init_image = True #@param {type:"boolean"}
+    hybrid_motion = "None" #@param ['None','Optical Flow','Perspective','Affine']
+    hybrid_flow_method = "Farneback" #@param ['Farneback','DenseRLOF','SF']
+    hybrid_composite = False #@param {type:"boolean"}
+    hybrid_comp_mask_type = "None" #@param ['None', 'Depth', 'Video Depth', 'Blend', 'Difference']
+    hybrid_comp_mask_inverse = False #@param {type:"boolean"}
+    hybrid_comp_mask_equalize = "None" #@param  ['None','Before','After','Both']
+    hybrid_comp_mask_auto_contrast = False #@param {type:"boolean"}
+    hybrid_comp_save_extra_frames = False #@param {type:"boolean"}
+    hybrid_use_video_as_mse_image = False #@param {type:"boolean"}
 
     #@markdown ####**Interpolation:**
     interpolate_key_frames = False #@param {type:"boolean"}

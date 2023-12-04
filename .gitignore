@@ -20,3 +20,6 @@ models/
 # ffmpeg
 ffmpeg
 .empty
+
+# IDE
+.DS_STORE

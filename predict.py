@@ -78,12 +78,12 @@ class Predictor(BasePredictor):
         ),
         width: float = Input(
             description="Width of output video. Reduce if out of memory.",
-            choices=[128, 144, 227.55, 256, 360, 480, 640, 720, 853.33, 1080, 1280, 1920],
+            choices=[128, 144, 228, 256, 360, 480, 640, 720, 853, 1080, 1280, 1920],
             default=512,
         ),
         height: float = Input(
             description="Height of output image. Reduce if out of memory.",
-            choices=[128, 144, 227.55, 256, 360, 480, 640, 720, 853.33, 1080, 1280, 1920],
+            choices=[128, 144, 228, 256, 360, 480, 640, 720, 853, 1080, 1280, 1920],
             default=512,
         ),
         num_inference_steps: int = Input(

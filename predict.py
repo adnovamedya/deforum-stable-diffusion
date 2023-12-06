@@ -76,12 +76,12 @@ class Predictor(BasePredictor):
             default="0: mountain",
             description="Prompt for negative. Provide 'frame number : prompt at this frame', separate different prompts with '|'. Make sure the frame number does not exceed the max_frames.",
         ),
-        width: float = Input(
+        width: int = Input(
             description="Width of output video. Reduce if out of memory.",
             choices=[128, 144, 228, 256, 360, 480, 640, 720, 853, 1080, 1280, 1920],
             default=512,
         ),
-        height: float = Input(
+        height: int = Input(
             description="Height of output image. Reduce if out of memory.",
             choices=[128, 144, 228, 256, 360, 480, 640, 720, 853, 1080, 1280, 1920],
             default=512,

@@ -79,12 +79,12 @@ class Predictor(BasePredictor):
         width: int = Input(
             description="Width of output video. Reduce if out of memory.",
             choices=[128, 144, 228, 256, 360, 480, 640, 720, 853, 1080, 1280, 1920],
-            default=512,
+            default=360,
         ),
         height: int = Input(
             description="Height of output image. Reduce if out of memory.",
             choices=[128, 144, 228, 256, 360, 480, 640, 720, 853, 1080, 1280, 1920],
-            default=512,
+            default=640,
         ),
         num_inference_steps: int = Input(
             description="Number of denoising steps", ge=1, le=500, default=50

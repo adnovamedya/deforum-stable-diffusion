@@ -264,6 +264,8 @@ def get_model_output_paths(root):
 
     models_path = root.models_path
     output_path = root.output_path
+    deforum_images_path = root.deforum_images_path
+    deforum_videos_path = root.deforum_videos_path
 
     #@markdown **Google Drive Path Variables (Optional)**
     
@@ -288,10 +290,16 @@ def get_model_output_paths(root):
 
     models_path = os.path.abspath(models_path)
     output_path = os.path.abspath(output_path)
+    deforum_images_path = os.path.abspath(deforum_images_path)
+    deforum_videos_path = os.path.abspath(deforum_videos_path)
     os.makedirs(models_path, exist_ok=True)
     os.makedirs(output_path, exist_ok=True)
+    os.makedirs(deforum_images_path, exist_ok=True)
+    os.makedirs(deforum_videos_path, exist_ok=True)
 
     print(f"models_path: {models_path}")
     print(f"output_path: {output_path}")
+    print(f"deforum_images_path: {deforum_images_path}")
+    print(f"deforum_videos_path: {deforum_videos_path}")
 
     return models_path, output_path

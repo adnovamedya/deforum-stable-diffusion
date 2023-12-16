@@ -104,7 +104,7 @@ make_gif = False
 bitdepth_extension = "exr" if args.bit_depth_output == 32 else "png"
 
 max_frames = str(anim_args.max_frames)
-mp4_path = f"deforum_videos/{process_id}/{process_id}_result.mp4"
+mp4_path = f"outputs/deforum_videos/{process_id}/{process_id}_result.mp4"
 
 if render_steps:  # render steps from a single image
     fname = f"{path_name_modifier}_%05d.png"

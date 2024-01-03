@@ -29,7 +29,7 @@ from helpers.aesthetics import load_aesthetics_model
 from helpers.prompts import Prompts
 
 
-MODEL_CACHE = "diffusion_models_cache"
+MODEL_CACHE = "models"
 
 
 class Predictor(BasePredictor):
@@ -78,13 +78,13 @@ class Predictor(BasePredictor):
         ),
         width: int = Input(
             description="Width of output video. Reduce if out of memory.",
-            choices=[128, 256, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024],
-            default=512,
+            choices=[128, 144, 228, 256, 360, 480, 640, 720, 853, 1080, 1280, 1920],
+            default=360,
         ),
         height: int = Input(
             description="Height of output image. Reduce if out of memory.",
-            choices=[128, 256, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024],
-            default=512,
+            choices=[128, 144, 228, 256, 360, 480, 640, 720, 853, 1080, 1280, 1920],
+            default=640,
         ),
         num_inference_steps: int = Input(
             description="Number of denoising steps", ge=1, le=500, default=50
@@ -126,6 +126,10 @@ class Predictor(BasePredictor):
         ),
         init_image: Path = Input(
             default=None, description="Provide init_image if use_init"
+        ),
+        add_init_noise: bool = Input(
+            default=False,
+            description="add_init_noise",
         ),
         strength: float = Input(
             default=0.5,
@@ -184,12 +188,10 @@ class Predictor(BasePredictor):
         hybrid_video_comp_mask_auto_contrast_cutoff_low_schedule: str = Input(
             default="0:(0)"
         ),
-
         enable_schedule_samplers: bool = Input(default=False),
         sampler_schedule:   str = Input(
             default="0:('euler'),10:('dpm2'),20:('dpm2_ancestral'),30:('heun'),40:('euler'),50:('euler_ancestral'),60:('dpm_fast'),70:('dpm_adaptive'),80:('dpmpp_2s_a'),90:('dpmpp_2m')"
-        ),          
-
+        ),
         kernel_schedule: str = Input(default="0: (5)"),
         sigma_schedule: str = Input(default="0: (1.0)"),
         amount_schedule: str = Input(default="0: (0.2)"),
@@ -227,29 +229,29 @@ class Predictor(BasePredictor):
         overwrite_extracted_frames: bool = Input(default=True),
         use_mask_video: bool = Input(default=False),
         video_mask_path: Path = Input(default=None),
-        hybrid_video_generate_inputframes: bool = Input(default=False),
-        hybrid_video_use_first_frame_as_init_image: bool = Input(default=True),
-        hybrid_video_motion: str = Input(
+        hybrid_generate_inputframes: bool = Input(default=False),
+        hybrid_use_first_frame_as_init_image: bool = Input(default=True),
+        hybrid_motion: str = Input(
             choices=["None", "Optical Flow", "Perspective", "Affine"],
             default="None",
         ),
-        hybrid_video_flow_method: str = Input(
+        hybrid_flow_method: str = Input(
             choices=["Farneback", "DenseRLOF", "SF"],
             default="Farneback",
         ),
-        hybrid_video_composite: bool = Input(default=False),
-        hybrid_video_comp_mask_type: str = Input(
+        hybrid_composite: bool = Input(default=False),
+        hybrid_comp_mask_type: str = Input(
             choices=["None", "Depth", "Video Depth", "Blend", "Difference"],
             default="None",
         ),
-        hybrid_video_comp_mask_inverse: bool = Input(default=False),
-        hybrid_video_comp_mask_equalize: str = Input(
+        hybrid_comp_mask_inverse: bool = Input(default=False),
+        hybrid_comp_mask_equalize: str = Input(
             choices=["None", "Before", "After", "Both"],
             default="None",
         ),
-        hybrid_video_comp_mask_auto_contrast: bool = Input(default=False),
-        hybrid_video_comp_save_extra_frames: bool = Input(default=False),
-        hybrid_video_use_video_as_mse_image: bool = Input(default=False),
+        hybrid_comp_mask_auto_contrast: bool = Input(default=False),
+        hybrid_comp_save_extra_frames: bool = Input(default=False),
+        hybrid_use_video_as_mse_image: bool = Input(default=False),
         interpolate_key_frames: bool = Input(default=False),
         interpolate_x_frames: int = Input(default=4),
         resume_from_timestring: bool = Input(default=False),
@@ -340,12 +342,13 @@ class Predictor(BasePredictor):
             "grid_rows": 2,
             "outdir": "cog_temp_output",
             "use_init": use_init,
+            "add_init_noise": add_init_noise,
             "strength": strength,
             "strength_0_no_init": True,
-            "init_image": init_image,
+            "init_image": str(init_image),
             "use_mask": use_mask,
             "use_alpha_as_mask": False,
-            "mask_file": mask_file,
+            "mask_file": str(mask_file),
             "invert_mask": invert_mask,
             "mask_brightness_adjust": 1.0,
             "mask_contrast_adjust": 1.0,
@@ -380,6 +383,10 @@ class Predictor(BasePredictor):
             "precision": "autocast",
             "C": 4,
             "f": 8,
+            "cond_prompt": "",
+            "cond_prompts": "",
+            "uncond_prompt": "",
+            "uncond_prompts": "",
             "prompt": "",
             "timestring": "",
             "init_latent": None,
@@ -396,7 +403,7 @@ class Predictor(BasePredictor):
             "max_frames": max_frames,
             "border": border,
 
-            #Motion Parameters
+            # Motion Parameters
             "angle": angle,
             "zoom": zoom,
             "translation_x": translation_x,
@@ -413,28 +420,30 @@ class Predictor(BasePredictor):
             "noise_schedule": noise_schedule,
             "strength_schedule": strength_schedule,
             "contrast_schedule": contrast_schedule,
-            "hybrid_comp_alpha_schedule": hybrid_video_comp_alpha_schedule,
-            "hybrid_comp_mask_blend_alpha_schedule": hybrid_video_comp_mask_blend_alpha_schedule,
-            "hybrid_comp_mask_contrast_schedule": hybrid_video_comp_mask_contrast_schedule,
-            "hybrid_comp_mask_auto_contrast_cutoff_high_schedule": hybrid_video_comp_mask_auto_contrast_cutoff_high_schedule,
-            "hybrid_comp_mask_auto_contrast_cutoff_low_schedule": hybrid_video_comp_mask_auto_contrast_cutoff_low_schedule,
 
-            #Sampler Scheduling
+            # Hybrid Video
+            "hybrid_video_comp_alpha_schedule": hybrid_video_comp_alpha_schedule,
+            "hybrid_video_comp_mask_blend_alpha_schedule": hybrid_video_comp_mask_blend_alpha_schedule,
+            "hybrid_video_comp_mask_contrast_schedule": hybrid_video_comp_mask_contrast_schedule,
+            "hybrid_video_comp_mask_auto_contrast_cutoff_high_schedule": hybrid_video_comp_mask_auto_contrast_cutoff_high_schedule,
+            "hybrid_video_comp_mask_auto_contrast_cutoff_low_schedule": hybrid_video_comp_mask_auto_contrast_cutoff_low_schedule,
+
+            # Sampler Scheduling
             "enable_schedule_samplers":enable_schedule_samplers,
-            "sampler_schedule": sampler_schedule ,
-
+            "sampler_schedule": sampler_schedule,
+            
             # Unsharp mask (anti-blur) Parmaters
             "kernel_schedule": kernel_schedule,
             "sigma_schedule": sigma_schedule,
             "amount_schedule": amount_schedule,
             "threshold_schedule": threshold_schedule,
-            
+
             # Coherence
             "color_coherence": color_coherence,
             "color_coherence_video_every_N_frames": color_coherence_video_every_N_frames,
             "color_force_grayscale": color_force_grayscale,
             "diffusion_cadence": diffusion_cadence,
-            
+
             # 3D Depth Waping
             "use_depth_warping": use_depth_warping,
             "midas_weight": midas_weight,
@@ -444,7 +453,7 @@ class Predictor(BasePredictor):
             "padding_mode": padding_mode,
             "sampling_mode": sampling_mode,
             "save_depth_maps": False,
-            
+
             # Video Input
             "video_init_path": str(video_init_path),
             "extract_nth_frame": extract_nth_frame,
@@ -453,25 +462,25 @@ class Predictor(BasePredictor):
             "video_mask_path": str(video_mask_path),
 
             # Hybrid Video for 2D/3D Animation Mode
-            "hybrid_generate_inputframes": hybrid_video_generate_inputframes,
-            "hybrid_use_first_frame_as_init_image": hybrid_video_use_first_frame_as_init_image,
-            "hybrid_motion": hybrid_video_motion,
-            "hybrid_flow_method": hybrid_video_flow_method,
-            "hybrid_composite": hybrid_video_composite,
-            "hybrid_comp_mask_type": hybrid_video_comp_mask_type,
-            "hybrid_comp_mask_inverse": hybrid_video_comp_mask_inverse,
-            "hybrid_comp_mask_equalize": hybrid_video_comp_mask_equalize,
-            "hybrid_comp_mask_auto_contrast": hybrid_video_comp_mask_auto_contrast,
-            "hybrid_comp_save_extra_frames": hybrid_video_comp_save_extra_frames,
-            "hybrid_use_video_as_mse_image": hybrid_video_use_video_as_mse_image,
-
+            "hybrid_generate_inputframes": hybrid_generate_inputframes,
+            "hybrid_use_first_frame_as_init_image": hybrid_use_first_frame_as_init_image,
+            "hybrid_motion": hybrid_motion,
+            "hybrid_flow_method": hybrid_flow_method,
+            "hybrid_composite": hybrid_composite,
+            "hybrid_comp_mask_type": hybrid_comp_mask_type,
+            "hybrid_comp_mask_inverse": hybrid_comp_mask_inverse,
+            "hybrid_comp_mask_equalize": hybrid_comp_mask_equalize,
+            "hybrid_comp_mask_auto_contrast": hybrid_comp_mask_auto_contrast,
+            "hybrid_comp_save_extra_frames": hybrid_comp_save_extra_frames,
+            "hybrid_use_video_as_mse_image": hybrid_use_video_as_mse_image,
+            
             # Interpolation
             "interpolate_key_frames": interpolate_key_frames,
             "interpolate_x_frames": interpolate_x_frames,
 
             # Resume Animation
             "resume_from_timestring": resume_from_timestring,
-            "resume_timestring": resume_timestring,            
+            "resume_timestring": resume_timestring,
         }
 
         args = SimpleNamespace(**args_dict)
@@ -515,10 +524,9 @@ class Predictor(BasePredictor):
         # clean up unused memory
         gc.collect()
         torch.cuda.empty_cache()
-        
-        # get prompts
-        cond, uncond = Prompts(prompt=animation_prompts,neg_prompt=negative_prompts).as_dict()
 
+        cond, uncond = Prompts(prompt=animation_prompts,neg_prompt=negative_prompts).as_dict()
+        
         # dispatch to appropriate renderer
         if anim_args.animation_mode == "2D" or anim_args.animation_mode == "3D":            
             render_animation(root, anim_args, args, cond, uncond)

@@ -296,9 +296,9 @@ def render_animation(root, anim_args, args, cond_prompts, uncond_prompts):
         hybrid_comp_schedules = {
             "alpha": keys.hybrid_comp_alpha_schedule_series[frame_idx],
             "mask_blend_alpha": keys.hybrid_comp_mask_blend_alpha_schedule_series[frame_idx],
-            "mask_contrast": keys.hybrid_comp_mask_contrast_schedule_series[frame_idx],
-            "mask_auto_contrast_cutoff_low": int(keys.hybrid_comp_mask_auto_contrast_cutoff_low_schedule_series[frame_idx]),
-            "mask_auto_contrast_cutoff_high": int(keys.hybrid_comp_mask_auto_contrast_cutoff_high_schedule_series[frame_idx]),
+            "mask_contrast": keys.hybrid_video_comp_mask_contrast_schedule_series[frame_idx],
+            "mask_auto_contrast_cutoff_low": int(keys.hybrid_video_comp_mask_auto_contrast_cutoff_low_schedule_series[frame_idx]),
+            "mask_auto_contrast_cutoff_high": int(keys.hybrid_video_comp_mask_auto_contrast_cutoff_high_schedule_series[frame_idx]),
         }
         sampler_name = None
         if anim_args.enable_schedule_samplers:

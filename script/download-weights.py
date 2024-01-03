@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import shutil
+from tqdm import tqdm
+import requests
+
+
+MODEL_CACHE = "models"
+if os.path.exists(MODEL_CACHE):
+    shutil.rmtree(MODEL_CACHE)
+os.makedirs(MODEL_CACHE, exist_ok=True)
+
+
+MODEL_MAP = {
+    "Protogen_V2.2.ckpt": {
+        "sha256": "bb725eaf2ed90092e68b892a1d6262f538131a7ec6a736e50ae534be6b5bd7b1",
+        "url": "https://huggingface.co/darkstorm2150/Protogen_v2.2_Official_Release/resolve/main/Protogen_V2.2.ckpt",
+        "requires_login": False,
+    }
+}
+
+
+def download_model(model_ckpt):
+    url = MODEL_MAP[model_ckpt]["url"]
+    if MODEL_MAP[model_ckpt]["requires_login"]:
+        username = sys.argv[1]
+        token = sys.argv[2]
+        _, path = url.split("https://")
+        url = f"https://{username}:{token}@{path}"
+
+    # contact server for model
+    print(f"..attempting to download {model_ckpt}...this may take a while")
+    ckpt_request = requests.get(url, stream=True)
+    request_status = ckpt_request.status_code
+
+    # inform user of errors
+    if request_status == 403:
+        raise ConnectionRefusedError(
+            "You have not accepted the license for this model."
+        )
+    elif request_status == 404:
+        raise ConnectionError("Could not make contact with server")
+    elif request_status != 200:
+        raise ConnectionError(
+            f"Some other error has ocurred - response code: {request_status}"
+        )
+
+    # write to model path
+    with open(os.path.join(MODEL_CACHE, model_ckpt), "wb") as model_file:
+        file_size = int(ckpt_request.headers.get("Content-Length"))
+        with tqdm(total=file_size, unit="B", unit_scale=True, desc=model_ckpt) as pbar:
+            for chunk in ckpt_request.iter_content(chunk_size=1024):
+                if chunk:  # filter out keep-alive new chunks
+                    model_file.write(chunk)
+                    pbar.update(len(chunk))
+
+
+# download checkpoints
+for model_ckpt in MODEL_MAP:
+    download_model(model_ckpt)

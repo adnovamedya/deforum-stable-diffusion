@@ -8,8 +8,8 @@ import requests
 
 
 MODEL_CACHE = "models"
-if os.path.exists(MODEL_CACHE):
-    shutil.rmtree(MODEL_CACHE)
+# if os.path.exists(MODEL_CACHE):
+#    shutil.rmtree(MODEL_CACHE)
 os.makedirs(MODEL_CACHE, exist_ok=True)
 
 MODEL_MAP = {

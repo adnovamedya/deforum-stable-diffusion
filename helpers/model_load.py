@@ -256,6 +256,7 @@ def load_model(root, load_on_run_all=True, check_sha256=True, map_location="cuda
 
     autoencoder_version = "sd-v1" #TODO this will be different for different models
     model.linear_decode = make_linear_decode(autoencoder_version, device)
+    print(f"..model loaded")
 
     return model, device
 
